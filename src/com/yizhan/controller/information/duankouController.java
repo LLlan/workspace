@@ -50,7 +50,7 @@ import com.yizhan.util.SmsUtil;
 import com.yizhan.util.Tools;
 /** 
  * 创建人：lj
- * 创建时间：2016-10-26
+ * 创建时间：2017-11-3
  */
 @Controller
 @RequestMapping(value="/api/duankou")
