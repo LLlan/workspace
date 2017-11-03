@@ -49,7 +49,7 @@ import com.yizhan.util.PathUtil;
 import com.yizhan.util.SmsUtil;
 import com.yizhan.util.Tools;
 /** 
- * 创建人：yangym 
+ * 创建人：lj
  * 创建时间：2016-10-26
  */
 @Controller
