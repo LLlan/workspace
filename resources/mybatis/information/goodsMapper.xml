@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="goodsMapper">
+
+	<!--  
+		获取所有的信息
+	-->
+	<select id="getlistPage" parameterType="page" resultType="pd">
+		SELECT
+			t1.fabuTime,
+			t1.goodsImg,
+			t1.goodsIntroduce,
+			t1.goodsName,
+			t1.goodsState,
+			t1.goods_category_fid,
+			t1.goods_id,
+			t1.topPrice,
+			t1.advisePrice,
+			t1.shangjiaPrice,
+			t1.shanghuPrice,
+			t1.weight,
+			t1.Stock,
+			t1.describe,
+			t1.danwei_fid,
+			t2.categoryName,
+			t3.name
+		FROM
+			tb_goods t1
+		LEFT JOIN tb_goods_category t2 ON t1.goods_category_fid = t2.goods_category_id
+		LEFT JOIN sys_good_danwei t3 ON t1.danwei_fid = t3.danwei_id
+		<where>
+			<if test="pd.goodsName!=null and pd.goodsName!='' and pd.searchNames!=null and pd.searchNames!='' and pd.goodsState!=null and pd.goodsState!=''">
+		 		t1.goodsName LIKE CONCAT(CONCAT('%', #{pd.goodsName}),'%')
+		 		OR
+		 		t2.goods_category_id LIKE CONCAT(CONCAT('%', #{pd.searchNames}),'%')
+		 		OR
+		 		t1.goodsState LIKE CONCAT(CONCAT('%', #{pd.goodsState}),'%')
+		 	</if>
+			<if test="pd.goodsName!=null and pd.goodsName!=''">
+		 		AND t1.goodsName LIKE CONCAT(CONCAT('%', #{pd.goodsName}),'%')
+		 	</if>
+			<if test="pd.goodsState!=null and pd.goodsState!=''">
+		 		AND t1.goodsState LIKE CONCAT(CONCAT('%', #{pd.goodsState}),'%')
+		 	</if>
+			<if test="pd.searchNames!=null and pd.searchNames!=''">
+		 		AND t2.goods_category_id LIKE CONCAT(CONCAT('%', #{pd.searchNames}),'%')
+		 	</if> 
+		</where> 
+		ORDER BY t1.goodsState DESC,t1.fabuTime DESC
+	</select>
+	<!--  
+		添加信息
+	-->
+	<insert id="goodsinsert" parameterType="pd">
+		INSERT INTO tb_goods(
+			goods_id,
+			goodsName,
+			fabuTime,
+			goods_category_fid,
+			goodsImg,
+			topPrice,
+			advisePrice,
+			shangjiaPrice,
+			shanghuPrice,
+			goodsState,
+			goodsIntroduce,
+			Stock,
+			danwei_fid
+			<!-- 
+			weight,
+			describe, -->
+		)VALUES(
+			#{goods_id},
+			#{goodsName},
+			#{fabuTime},
+			#{goods_category_fid},
+			#{goodsImg},
+			#{topPrice},
+			#{advisePrice},
+			#{shangjiaPrice},
+			#{shanghuPrice},
+			#{goodsState},
+			#{goodsIntroduce},
+			#{Stock},
+			#{danwei_fid}
+			<!--
+			#{weight}, 
+			#{describe}, -->
+		)
+	</insert>
+	<!--  
+		获取指定商家指定分类的所有商品以及商品的月销售量
+	-->
+	<select id="getlistAll" parameterType="pd" resultType="pd">
+		SELECT
+			tg.goods_id,
+			tg.goodsName,
+			tg.goodsImg,
+			tg.advisePrice,
+			tg.topPrice,
+			tg.goodsState,
+			IFNULL(tth.goodsNum, '0') goodsNum
+		FROM
+			tb_goods tg
+		LEFT JOIN (
+			SELECT
+				tog.goods_fid,
+				SUM(tog.goodsNum) goodsNum
+			FROM
+				tb_order_takeou tot
+			LEFT JOIN tb_order_goods tog ON tog.takeout_order_fid = tot.order_takeou_id
+			WHERE
+				tot.orderTime LIKE CONCAT(CONCAT('%', #{yearsAndmonth}),'%')
+			AND tot.orderStateShangjia = '5'
+			GROUP BY
+				tog.goods_fid
+		) tth ON tth.goods_fid = tg.goods_id
+		WHERE
+			tg.goods_category_fid=#{goods_category_id}<!-- tg.user_shangjia_fid = #{user_shangjia_fid} AND  -->
+	</select>
+	<!--  
+		根据主键ID或Name获取对象信息
+	-->
+	<select id="getDateByIdorName" parameterType="pd" resultType="pd">
+		SELECT
+			IFNULL(tg.topPrice,0)topPrice,
+			IFNULL(tg.advisePrice,0)advisePrice,
+			IFNULL(tg.shangjiaPrice,0)shangjiaPrice,
+			IFNULL(tg.shanghuPrice,0)shanghuPrice,
+			tg.fabuTime,
+			IFNULL(tg.goods_category_fid,"") goods_category_id,
+			tg.goodsImg,
+			IFNULL(tg.goods_id,"")goods_id,
+			IFNULL(tg.goodsState,"")goodsState,
+			IFNULL(tg.goodsName,"")goodsName,
+			IFNULL(tg.user_shangjia_fid,"")user_shangjia_fid,
+			IFNULL(tg.goodsIntroduce,"")goodsIntroduce,
+			IFNULL(t1.categoryName,"")categoryName,
+			tg.danwei_fid,
+			tg.weight,
+			tg.Stock
+			<!-- tg.describe -->
+		FROM
+			tb_goods tg
+		LEFT JOIN tb_goods_category t1 ON tg.goods_category_fid = t1.goods_category_id
+		<where> 
+			<if test="tagID!=null and tagID!=''">
+				tg.goods_id=#{tagID}
+			</if>
+			<if test="goods_id!=null and goods_id!=''">
+				tg.goods_id=#{goods_id}
+			</if>
+			<if test="goodsName!=null and goodsName!=''">
+				tg.goodsName=#{goodsName}
+			</if>
+		</where>
+	</select>
+	<!--  
+		修改指定信息
+	-->
+	<update id="goodsupdate" parameterType="pd">
+		update tb_goods
+		set
+			goodsName=#{goodsName},
+			goodsImg=#{goodsImg},
+			topPrice=#{topPrice},
+			advisePrice=#{advisePrice},
+			shangjiaPrice=#{shangjiaPrice},
+			shanghuPrice=#{shanghuPrice},
+			fabuTime=#{fabuTime},
+			goodsIntroduce=#{goodsIntroduce},
+			weight=#{weight},
+			Stock=#{Stock},
+			danwei_fid=#{danwei_fid},
+			goodsState=#{goodsState},
+			<!-- describe=#{describe}, -->
+			goods_category_fid=#{goods_category_fid}
+		where 
+			goods_id=#{goods_id}
+	</update>
+	<update id="goodsupdateImg" parameterType="pd">
+		update tb_goods
+		set
+			goodsImg=#{goodsImg}
+		where 
+			goods_id=#{goods_id}
+	</update>
+	<!--  
+		修改指定商品的状态
+	-->
+	<update id="updatestateOne" parameterType="pd">
+		update tb_goods
+		set
+			goodsState=#{goodsState}
+		where 
+			goods_id=#{goods_id}
+	</update>
+	<!--  
+		修改指定信息
+	-->
+	<update id="updatestate" parameterType="pd">
+		update tb_goods
+		set
+			goodsState=#{goodsState}
+		where goods_id in
+		<foreach collection="ids" item="item" index="index" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</update>
+	
+	
+	<!--  
+		获取图片地址路径
+	-->
+	<select id="getImgPaths" parameterType="pd" resultType="pd">
+		SELECT
+		GROUP_CONCAT(tg.goodsImg) imgPaths
+		FROM tb_goods tg
+		where tg.goods_id in
+		<foreach collection="ids" item="item" index="index" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+	<!--  
+		删除操作
+	-->
+	<delete id="deleteGoods" parameterType="pd">
+		delete 
+		from tb_goods
+		where goods_id in
+		<foreach collection="ids" item="item" index="index" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	<!-- 
+		删除商品
+	 -->
+	<delete id="goodsdelete" parameterType="pd">
+		delete from tb_goods where goods_id =#{ids}
+	</delete>
+</mapper>

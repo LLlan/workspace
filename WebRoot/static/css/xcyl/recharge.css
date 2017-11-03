@@ -1,0 +1,48 @@
+.pic{
+  position: relative;
+  background: url(../../images/xcyl/banner2.png) no-repeat;
+  background-size: cover;
+  width: 100%;
+  height: 250px;
+}
+.pic_t{
+  position: absolute;
+  top: 38%;
+  left: 65%;
+  margin-left: -40%;
+  width: 180px;
+  height: 115px;
+}
+.pic_t_l{
+  float: left;
+  width: 80px;
+  height: 80px;
+}
+.pic_t_l img{
+  width: 100%;
+  height: 100%;
+}
+.pic_t_r{
+  float: left;
+  margin-left: 23px;
+}
+.balance{
+  color: #5FBF71;
+  font-size: 16px;
+  font-weight: bold;
+}
+.price{
+  color: #E41C4B;
+  font-size: 26px;
+  margin-top: 10px;
+}
+.pic_t_b{
+  width: 100%;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+  color: #fff;
+  margin-top: 80px;
+  border-radius: 5px;
+  background-color: #40B55C;
+}

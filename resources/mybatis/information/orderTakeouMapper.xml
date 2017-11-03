@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="orderTakeouMapper">
+
+	<!-- 菜篮订单管理列表 -->
+	<select id="getOrderTakeoulistPage" parameterType="page" resultType="pd">
+		SELECT 
+			t1.order_takeou_id,
+			t1.orderTime,
+			t1.orderNumber,
+			t1.order_remark,
+			t1.payState,
+			t1.payMethod,
+			t1.payType,
+			t1.totalSum,
+			t1.paySum,
+			t1.bucha,
+			t1.user_kehu_fid,
+			t2.shanghuName,
+			t2.userName,
+			t2.phone,
+			t2.address,
+			t2.detailAddress,
+			t2.balance
+		FROM tb_order_takeout t1
+		LEFT JOIN tb_user_kehu t2 ON t1.user_kehu_fid = t2.user_kehu_id
+		<where>
+			<if test="pd.searchName!=null and pd.searchName!=''">
+		 		CONCAT(t1.orderNumber,t2.userName,t2.phone,t2.shanghuName,t2.address,t2.detailAddress) LIKE CONCAT(CONCAT('%', #{pd.searchName}), '%')
+		 	</if>
+		 	<if test="pd.orderTime!=null and pd.orderTime!=''"><!-- 根据订单时间检索，各个月份的数据 -->
+				AND t1.orderTime LIKE CONCAT(CONCAT('%', #{pd.orderTime}),'%') 
+			</if>
+			<if test=" pd.payState != null and pd.payState != '' ">
+				AND t1.payState LIKE CONCAT(CONCAT('%', #{pd.payState}),'%') 
+			</if>
+			<if test=" pd.orderTime == null or pd.orderTime == '' ">
+				AND to_days(t1.orderTime) = to_days(now())
+			</if>
+		</where>
+		GROUP BY t1.order_takeou_id
+		ORDER BY t1.orderTime desc
+	</select>
+	
+	<!-- 导出订单信息到EXCEL -->
+	<select id="getOrderTakeouExcelList" parameterType="pd" resultType="pd">
+		SELECT 
+			t1.order_takeou_id,
+			t1.orderTime,
+			t1.orderNumber,
+			t1.order_remark,
+			t1.payState,
+			t1.payMethod,
+			t1.payType,
+			t1.totalSum,
+			t1.paySum,
+			t1.user_kehu_fid,
+			t2.shanghuName,
+			t2.userName,
+			t2.phone,
+			t2.address,
+			t2.detailAddress,
+			t2.balance,
+			t2.bucha
+		FROM tb_order_takeout t1
+		LEFT JOIN tb_user_kehu t2 ON t1.user_kehu_fid = t2.user_kehu_id
+		<where>
+			<if test="searchName!=null and searchName!=''">
+		 		CONCAT(t1.orderNumber,t2.userName,t2.phone,t2.shanghuName,t2.address,t2.detailAddress) LIKE CONCAT(CONCAT('%', #{searchName}), '%')
+		 	</if>
+		 	<if test="orderTime!=null and orderTime!=''"><!-- 根据订单时间检索，各个月份的数据 -->
+				AND t1.orderTime LIKE CONCAT(CONCAT('%', #{orderTime}),'%') 
+			</if>
+			<if test="payState != null and payState != '' ">
+				AND t1.payState LIKE CONCAT(CONCAT('%', #{payState}),'%') 
+			</if>
+			<if test="orderTime == null or orderTime == '' ">
+				AND to_days(t1.orderTime) = to_days(now())
+			</if>
+		</where>
+		GROUP BY t1.order_takeou_id
+		ORDER BY t1.orderTime desc
+	</select>
+	
+	<!-- 菜篮订单明细列表 -->
+	<select id="ordermingxilistPage" parameterType="page" resultType="pd">
+		SELECT
+			t1.order_takeou_id,
+			t1.orderTime,
+			t1.orderNumber,
+			t1.order_remark,
+			t1.payState,
+			t1.payMethod,
+			t1.payType,
+			t1.totalSum,
+			t1.paySum,
+			t1.user_kehu_fid,
+			t2.goodsName,
+			t2.goodsNum,
+			t2.price,
+			ROUND(t2.goodsNum*t2.price,2) AS Total,
+			tgb.name,
+			tgc.categoryName,
+			tga.title
+		FROM
+			tb_order_takeout t1
+		LEFT JOIN tb_order_goods t2 ON t1.order_takeou_id = t2.takeout_order_fid
+		INNER JOIN tb_goods tg on tg.goods_id =  t2.goods_fid
+		INNER JOIN sys_good_danwei tgb ON tg.danwei_fid = tgb.danwei_id
+		INNER JOIN tb_goods_category tgc ON tgc.goods_category_id =  tg.goods_category_fid
+		INNER JOIN tb_goods_mokuai tga ON tga.goods_mokuai_id = tgc.goods_mokuai_fid
+		WHERE
+		 t1.order_takeou_id =#{pd.order_takeou_id}
+		ORDER BY t1.orderTime DESC
+	</select>
+	
+	<!-- 导出订单明细列表到EXCEL -->
+	<select id="ordermingxiList" parameterType="pd" resultType="pd">
+		SELECT
+			t1.order_takeou_id,
+			t1.orderTime,
+			t1.orderNumber,
+			t1.order_remark,
+			t1.payState,
+			t1.payMethod,
+			t1.payType,
+			t1.totalSum,
+			t1.paySum,
+			t1.user_kehu_fid,
+			t2.goodsName,
+			t2.goodsNum,
+			t2.price,
+			ROUND(t2.goodsNum*t2.price,2) AS Total,
+			tgb.name,
+			tgc.categoryName,
+			tga.title,
+			tgy.userName,
+			tgy.phone,
+			tgy.address,
+			tgy.detailAddress
+		FROM
+			tb_order_takeout t1
+		LEFT JOIN tb_order_goods t2 ON t1.order_takeou_id = t2.takeout_order_fid
+		INNER JOIN tb_goods tg on tg.goods_id =  t2.goods_fid
+		INNER JOIN sys_good_danwei tgb ON tg.danwei_fid = tgb.danwei_id
+		INNER JOIN tb_goods_category tgc ON tgc.goods_category_id =  tg.goods_category_fid
+		INNER JOIN tb_goods_mokuai tga ON tga.goods_mokuai_id = tgc.goods_mokuai_fid
+		INNER JOIN tb_user_kehu tgy ON tgy.user_kehu_id = t1.user_kehu_fid
+		WHERE
+		 t1.order_takeou_id =#{order_takeou_id}
+		ORDER BY t1.orderTime DESC
+	</select>
+	
+	<!-- 执行昨日补差金额 -->
+	<update id="updatezuoribucha" parameterType="pd">
+		update 
+			tb_user_kehu
+		set
+			bucha = #{bucha}
+		where 
+			user_kehu_id = #{user_kehu_id}
+	</update>
+	
+	<!-- 执行昨日补差金额 -->
+	<update id="updatePayState" parameterType="pd">
+		update 
+			tb_order_takeout
+		set
+			payState = #{payState}
+		where 
+			order_takeou_id = #{order_takeou_id}
+	</update>
+	
+</mapper>

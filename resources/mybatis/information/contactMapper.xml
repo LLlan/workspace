@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="contactMapper">
+
+         <!-- 查询联系我们列表 -->
+	 <select id="contactlistPage" parameterType="page" resultType="pd">
+	         select 
+	             contact_id,
+	             hotline,
+	             weizhi,
+	             detailWeizhi,
+	             create_time,
+				 update_time
+	         from sys_contactwm
+	 </select>
+        
+		<!-- 保存新增端口 -->	
+		<insert id="saveContactwm" parameterType="pd">
+		        insert into sys_contactwm(
+		             contact_id,
+	                 hotline,
+	                 weizhi,
+	                 detailWeizhi,
+	                 create_time	         
+		        )values(
+		            #{contact_id},
+		            #{hotline},
+		            #{weizhi},
+		            #{detailWeizhi},
+		            #{create_time}
+		        )
+		</insert>
+		
+		<!-- 根据id查联系信息 -->
+	   <select id="getDataByID" parameterType="pd" resultType="pd">
+	           select 
+	                 contact_id,
+		             hotline,
+		             weizhi,
+		             detailWeizhi,
+		             create_time,
+					 update_time	         
+		       from sys_contactwm
+		       where contact_id = #{contact_id}
+	   </select>
+	   
+	     <!-- 保存修改的联系我们信息-->
+	  <update id="updateContactwm" parameterType="pd">
+	        update sys_contactwm
+	          set
+	       	    hotline= #{hotline},   
+	       	    weizhi= #{weizhi},   
+	       	    detailWeizhi= #{detailWeizhi},   
+	       	    update_time= #{update_time}   
+		      where contact_id= #{ contact_id}   
+	  </update>
+	  <!-- 删除联系我们信息 -->
+	  <delete id="deleteContactwm" parameterType="pd">
+	          delete from
+	          sys_contactwm
+	          where contact_id= #{contact_id}   
+	  </delete>
+</mapper>

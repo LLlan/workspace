@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="goodsCategoryMapper">
+	<!--  
+		添加信息
+	-->
+	<insert id="spflinsert" parameterType="pd">
+		INSERT INTO tb_goods_category(
+			goods_category_id,
+			categoryName,
+			addTime,
+			goods_mokuai_fid,
+			user_shangjia_fid
+		)VALUES(
+			#{goods_category_id},
+			#{categoryName},
+			#{addTime},
+			#{goods_mokuai_fid},
+			#{user_shangjia_fid}
+		)
+	</insert>
+	<!--  
+		获取所有的信息
+	-->
+	<select id="getlistPage" parameterType="page" resultType="pd">
+		SELECT
+			tgc.goods_category_id,
+			tgc.categoryName,
+			tgc.addTime,
+			tgc.goods_mokuai_fid,
+			t1.title,
+			t1.goods_mokuai_Img_url
+		FROM
+			tb_goods_category tgc
+		LEFT JOIN tb_goods_mokuai t1  ON tgc.goods_mokuai_fid = t1.goods_mokuai_id
+		<where>
+			<if test="pd.searchName!=null and pd.searchName!=''">
+		 		tgc.categoryName LIKE CONCAT(CONCAT('%', #{pd.searchName}),'%')
+		 		OR
+		 		t1.title LIKE CONCAT(CONCAT('%', #{pd.searchName}),'%')
+		 	</if>
+		</where> 
+		ORDER BY tgc.addtime desc
+	</select>
+	<!--  
+		获取所有的信息
+	-->
+	<select id="goodsCategoryList" parameterType="pd" resultType="pd">
+		SELECT 
+			tgc.goods_category_id,
+			tgc.categoryName,
+			tgc.addtime,
+			tgc.goods_mokuai_fid
+		FROM 
+			tb_goods_category tgc
+			inner join tb_goods tg on tg.goods_category_fid = tgc.goods_category_id 
+		WHERE
+			tgc.goods_mokuai_fid=#{goods_mokuai_id}
+		GROUP BY tgc.goods_category_id
+		ORDER BY tgc.addtime desc
+	</select>
+	<!--  
+		获取所有的信息
+	-->
+	<select id="goodsCategoryListSearch" parameterType="pd" resultType="pd">
+		SELECT 
+			tgc.goods_category_id,
+			tgc.categoryName,
+			tgc.addtime
+		FROM 
+			tb_goods_category tgc
+			inner join tb_goods tg on tg.goods_category_fid = tgc.goods_category_id 
+			GROUP BY tgc.goods_category_id
+		ORDER BY tgc.addtime desc
+	</select>
+	<!--  
+		根据ID或者名称获取对象信息
+	-->
+	<select id="spflgetDateByIdorName" parameterType="pd" resultType="pd">
+		SELECT 
+			*
+		FROM tb_goods_category tgc
+		<where>
+			<if test="tagID!='' and tagID!=null">
+				tgc.goods_category_id=#{tagID}
+			</if>
+			<if test="categoryName!='' and categoryName!=null">
+				AND tgc.categoryName=#{categoryName} 
+				and tgc.user_shangjia_fid=#{user_shangjia_fid}
+				and tgc.goods_mokuai_fid=#{goods_mokuai_fid}
+			</if>
+		</where>
+	</select>
+	<!--  
+		修改指定信息
+	-->
+	<update id="spflupdate" parameterType="pd">
+		update tb_goods_category
+		set
+			categoryName=#{categoryName},
+			addTime=#{addTime}
+		where 
+			goods_category_id=#{goods_category_id}
+	</update>
+	<!--  
+		删除操作
+	-->
+	<delete id="deleteOne" parameterType="pd">
+		delete 
+		from tb_goods_category
+		where 
+			goods_category_id = #{goods_category_id}
+	</delete>
+	<!--  
+		删除操作
+	-->
+	<delete id="delete" parameterType="pd">
+		delete 
+		from tb_goods_category
+		where 
+			goods_category_id in
+			<foreach collection="ids" item="item" index="index" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+	</delete>
+	
+	
+	
+</mapper>
